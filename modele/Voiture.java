@@ -19,6 +19,8 @@ public class Voiture
    private Noeud origine;
    /**noeud de destination finale*/
    private Noeud destination;
+   /**dernier noeud suivi*/
+   private Noeud noeudSuivi;
    /**pause pendant le parcours*/
    private boolean pause;
    /**indique si la voiture est arrivee*/
@@ -50,6 +52,7 @@ public class Voiture
    public Voiture(int no, Noeud origine, Noeud destination) {
       this(no);
       this.origine = origine;
+      this.noeudSuivi = this.origine;
       x = origine.x;
       y = origine.y;
       this.destination = destination;
@@ -64,6 +67,7 @@ public class Voiture
    public Voiture(int no, int xo, int yo, int xd, int yd) {
       this(no);
       this.origine = ReseauRoutier.getNoeud(xo, yo);
+      this.noeudSuivi = this.origine;
       x = origine.x;
       y = origine.y;
       this.destination = ReseauRoutier.getNoeud(xd, yd);
