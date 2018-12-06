@@ -75,10 +75,12 @@ public class Noeud {
       if(!retraitOk) System.out.println("erreur dans le retrait de voiture " + this);
    }
 
-   public List<Noeud> getVoisins() { return noeudsAccessibles; }
-   public int getX() { return x; }
-   public int getY() { return y; }
+   public double getX() { return x; }
+   public double getY() { return y; }
    public List<Arc> getArcSortants() { return arcSortants; }	
-   public double getId() { return id; }
+   public boolean isPrincipal() {return principal;}
+   public void addArcEntrant(Arc arc) {arcEntrants.add(arc);}
+   public void addArcSortant(Arc arc) {arcSortants.add(arc);}
+   public int getNbCars() {return cars.size();}
 
 }
