@@ -8,9 +8,9 @@ public class Voiture
    /**identifiant de la voiture*/
    private int id;
    /**coordonnée x de la voiture*/
-   int x;
+   double x;
    /**coordonnée y de la voiture*/
-   int y;
+   double y;
    /**liste des noeuds du trajet prevu*/
    private List<Noeud> trajet;
    /**liste des restant a parcourir*/
@@ -23,6 +23,14 @@ public class Voiture
    private boolean pause;
    /**indique si la voiture est arrivee*/
    private boolean arrivee;
+   /**accident pendant le parcours*/
+   private boolean accident;
+   /**indique si la voiture est dans un bouchon*/
+   private boolean bouchon;
+   /**tps avant remorquage*/
+   final static int REMORQUAGE = 10;
+   /**temps de panne*/
+   private int tpsPanne = 0;
    
    
    Voiture(){}
@@ -68,29 +76,27 @@ public class Voiture
    public void calculerRoute()
    {
       boolean enLigne = (origine.getY()==destination.getY());
-      if (enLigne)
+      Noeud suivant = origine;
+      while (!suivant.equals(destination))
       {
-         int ligne = origine.getY();
-         int sens = destination.getX() - origine.getX();
-         sens = sens/Math.abs(sens);
-         for(int i=origine.getX(); i!=destination.getX(); i+=sens)
+         List<Arc> arcSortants = suivant.getArcSortants();
+         if(!arcSortants.isEmpty())
          {
-            Noeud n = ReseauRoutier.getNoeud(i, ligne);
-            trajet.add(n);
+            for(Arc arc:arcSortants)
+            {
+               suivant = arc.getEnd();
+               if(suivant==null) System.err.println("pb de suivant : " + arc);
+               if (enLigne && suivant.getY()==destination.getY()) break;
+               if(!enLigne && suivant.getX()==destination.getX()) break;
+            }
+            trajet.add(suivant);
+         }
+         else
+         {
+            System.err.println("pb avec ce noeud " + suivant);
+            break;
          }
       }
-      else
-      {
-         int colonne = origine.getX();
-         int sens = destination.getY() - origine.getY();
-         sens = sens/Math.abs(sens);
-         for(int i=origine.getY(); i!=destination.getY(); i+=sens)
-         {
-            Noeud n = ReseauRoutier.getNoeud(colonne, i);
-            trajet.add(n);
-         }
-      }
-      trajet.add(destination);
    }
    
    /** retourne le prochain noeud de la route (depile routeRestante)
@@ -98,17 +104,22 @@ public class Voiture
    public Noeud prochainNoeud()
    {
       Noeud suivant = null;
+      //TODO: modifier ci dessous pour prendre en compte la notion de bouchon, d'arrivee, ..
       if(!routeRestante.isEmpty()) suivant = routeRestante.remove(0);
       return suivant;
    }
    
-   /**affecte les coordonnees x,y de la voiture*/
-   public void setXY(int x, int y) 
-   { 
-      this.x = x; this.y = y; 
-      if (destination!=null && x==destination.x && y==destination.y) arrivee = true;
+  /**verifie si la voiture est dans un bouchon*/
+  public void verifBouchon()
+   {
+      Noeud suivant = null;
+      if(!routeRestante.isEmpty()) 
+      {
+         suivant = routeRestante.get(0);
+         //TODO: verifier s'il y a un bouchon et changer alors l'etat de la voiture
+      }
    }
-
+   
    /**retourne une chaine de caracteres contenant l'identfiant de la voiture et son chemin prevu*/
    public String toString()
    {
@@ -122,5 +133,25 @@ public class Voiture
    public int getY() { return y; }
    public boolean isPause() {return pause; }
    public boolean isArrivee() { return arrivee; }
-   public void setPause(boolean pause) { this.pause = pause; }
+   public void setPause(boolean pause) 
+   { 
+      this.pause = pause; 
+      if(pause && noeudSuivi!=null) noeudSuivi.addCar(this);
+      if(!pause && noeudSuivi!=null) noeudSuivi.removeCar(this);
+   }
+   public Noeud getNoeudSuivi() { return noeudSuivi; }
+   public boolean isAccident() { return accident; }
+   public void setAccident(boolean accident)
+   {
+      this.accident = accident;
+      if (accident)this.pause = true;
+   }
+   public int getId() { return id; }
+   public boolean isBouchon() { return bouchon; }
+   public void setBouchon(boolean bouchon) { this.bouchon = bouchon; }
+   
+   public void incrementeTpsPanne() {tpsPanne++; }
+   public boolean isARemorquer() {
+      //TODO: le vehicule est a remorquer si le tps de panne depasse le seuil
+      return false;}   
 }
